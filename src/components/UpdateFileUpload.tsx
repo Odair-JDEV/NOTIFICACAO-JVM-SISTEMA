@@ -112,6 +112,7 @@ export const UpdateFileUpload = ({ onFileUpdate, currentData }: UpdateFileUpload
             dataEnvioEmail: String(dataEnvioEmail || "").trim(),
             regularizado: "Não",
             statusVerificacao: "normal",
+            emCampo: "Não",
             bairro: String(bairro || "").trim(),
             logradouro: String(logradouro || "").trim(),
             numLogradouro: String(numLogradouro || "").trim(),
@@ -126,12 +127,10 @@ export const UpdateFileUpload = ({ onFileUpdate, currentData }: UpdateFileUpload
           if (existingItem) {
             if (existingItem.regularizado === "Sim") {
               newItem.statusVerificacao = "aguardando_verificacao_jvm";
-              mergedData.push(newItem);
-              addedCount++;
-            } else {
-              mergedData.push(newItem);
-              addedCount++;
             }
+            newItem.emCampo = existingItem.emCampo;
+            mergedData.push(newItem);
+            addedCount++;
             existingMap.delete(key);
           } else {
             mergedData.push(newItem);

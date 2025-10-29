@@ -10,6 +10,7 @@ export interface Irregularity {
   dataEnvioEmail: string;
   regularizado: string;
   statusVerificacao: "normal" | "aguardando_verificacao_jvm"; // Registros que foram regularizados e reapareceram
+  emCampo: string; // "Sim" ou "Não" - indica se a irregularidade foi verificada em campo
   bairro: string;
   logradouro: string;
   numLogradouro: string;

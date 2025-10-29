@@ -92,6 +92,7 @@ export const FileUpload = ({ onFileUpload }: FileUploadProps) => {
             dataEnvioEmail: String(dataEnvioEmail || "").trim(),
             regularizado: String(regularizado || "Não").trim(),
             statusVerificacao: "normal" as const,
+            emCampo: "Não",
             bairro: String(bairro || "").trim(),
             logradouro: String(logradouro || "").trim(),
             numLogradouro: String(numLogradouro || "").trim(),

@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Irregularity } from "@/types/irregularity";
-import { AlertCircle, CheckCircle, Clock, ChevronDown, ChevronRight } from "lucide-react";
+import { AlertCircle, CheckCircle, Clock, ChevronDown, ChevronRight, MapPin } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 interface IrregularityTableProps {
   data: Irregularity[];
   onUpdateRegularizado?: (numFormulario: string, numeroPoste: string, regularizado: boolean) => void;
+  onUpdateEmCampo?: (numFormulario: string, numeroPoste: string, emCampo: boolean) => void;
 }
 
 interface GroupedIrregularity {
@@ -28,7 +29,7 @@ interface GroupedIrregularity {
   numLogradouro: string;
 }
 
-export const IrregularityTable = ({ data, onUpdateRegularizado }: IrregularityTableProps) => {
+export const IrregularityTable = ({ data, onUpdateRegularizado, onUpdateEmCampo }: IrregularityTableProps) => {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
@@ -39,6 +40,18 @@ export const IrregularityTable = ({ data, onUpdateRegularizado }: IrregularityTa
 
     toast({
       title: checked ? "Marcado como regularizado" : "Desmarcado",
+      description: `Formulário ${numFormulario}, Poste ${numeroPoste}`,
+    });
+  };
+
+  const handleEmCampoClick = (numFormulario: string, numeroPoste: string, currentStatus: string) => {
+    if (onUpdateEmCampo) {
+      const newStatus = currentStatus === "Sim" ? false : true;
+      onUpdateEmCampo(numFormulario, numeroPoste, newStatus);
+    }
+
+    toast({
+      title: currentStatus === "Sim" ? "Removido de Em Campo" : "Marcado como Em Campo",
       description: `Formulário ${numFormulario}, Poste ${numeroPoste}`,
     });
   };
@@ -127,6 +140,7 @@ export const IrregularityTable = ({ data, onUpdateRegularizado }: IrregularityTa
           <TableRow>
             <TableHead className="w-12"></TableHead>
             <TableHead className="w-20">Marcar</TableHead>
+            <TableHead className="w-24">Em Campo</TableHead>
             <TableHead>Município</TableHead>
             <TableHead>Formulário</TableHead>
             <TableHead>Postes</TableHead>
@@ -170,6 +184,23 @@ export const IrregularityTable = ({ data, onUpdateRegularizado }: IrregularityTa
                         }
                         disabled={group.items[0].regularizado === "Sim"}
                       />
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {!hasMultipleItems && (
+                      <Button
+                        variant={group.items[0].emCampo === "Sim" ? "default" : "outline"}
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEmCampoClick(group.numFormulario, group.items[0].numeroPoste, group.items[0].emCampo);
+                        }}
+                        data-testid="button-em-campo"
+                        className="h-8 px-2"
+                      >
+                        <MapPin className={`h-3 w-3 ${group.items[0].emCampo === "Sim" ? "mr-1" : ""}`} />
+                        {group.items[0].emCampo === "Sim" && <span className="text-xs">Em Campo</span>}
+                      </Button>
                     )}
                   </TableCell>
                   <TableCell className="font-medium">{group.municipio}</TableCell>
@@ -231,6 +262,21 @@ export const IrregularityTable = ({ data, onUpdateRegularizado }: IrregularityTa
                         }
                         disabled={item.regularizado === "Sim"}
                       />
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant={item.emCampo === "Sim" ? "default" : "outline"}
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEmCampoClick(group.numFormulario, item.numeroPoste, item.emCampo);
+                        }}
+                        data-testid="button-em-campo"
+                        className="h-8 px-2"
+                      >
+                        <MapPin className={`h-3 w-3 ${item.emCampo === "Sim" ? "mr-1" : ""}`} />
+                        {item.emCampo === "Sim" && <span className="text-xs">Em Campo</span>}
+                      </Button>
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm"></TableCell>
                     <TableCell className="text-muted-foreground text-sm">{group.numFormulario}</TableCell>

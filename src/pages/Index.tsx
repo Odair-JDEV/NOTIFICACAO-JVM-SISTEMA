@@ -8,7 +8,7 @@ import { Filters } from "@/components/Filters";
 import { FluxoChart } from "@/components/FluxoChart";
 import { AnalysisDashboard } from "@/components/AnalysisDashboard";
 import { Irregularity } from "@/types/irregularity";
-import { AlertCircle, CheckCircle, Clock, FileText, Download, AlertTriangle } from "lucide-react";
+import { AlertCircle, CheckCircle, Clock, FileText, Download, AlertTriangle, MapPin } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -193,6 +193,16 @@ const Index = () => {
     );
   };
 
+  const handleUpdateEmCampo = (numFormulario: string, numeroPoste: string, emCampo: boolean) => {
+    setData(prevData =>
+      prevData.map(item =>
+        item.numFormulario === numFormulario && item.numeroPoste === numeroPoste
+          ? { ...item, emCampo: emCampo ? "Sim" : "Não" }
+          : item
+      )
+    );
+  };
+
   const handleConfirmarVerificacaoJVM = (numFormulario: string, numeroPoste: string) => {
     setData(prevData =>
       prevData.map(item =>
@@ -246,6 +256,10 @@ const Index = () => {
     return data.filter((item) => item.statusVerificacao === "aguardando_verificacao_jvm");
   }, [data]);
 
+  const emCampoData = useMemo(() => {
+    return data.filter((item) => item.emCampo === "Sim" && item.statusVerificacao === "normal");
+  }, [data]);
+
   // Stats principais - sempre mostram o total geral
   const stats = useMemo(() => {
     // Contar apenas registros normais (não aguardando verificação)
@@ -255,8 +269,9 @@ const Index = () => {
     const noPrazo = normalData.filter((item) => item.vencidas >= 0 && item.regularizado === "Não").length;
     const regularizadas = normalData.filter((item) => item.regularizado === "Sim").length;
     const aguardandoVerificacao = data.filter((item) => item.statusVerificacao === "aguardando_verificacao_jvm").length;
+    const emCampo = normalData.filter((item) => item.emCampo === "Sim").length;
 
-    return { total, vencidas, noPrazo, regularizadas, aguardandoVerificacao };
+    return { total, vencidas, noPrazo, regularizadas, aguardandoVerificacao, emCampo };
   }, [data]);
 
   // Stats do município filtrado - apenas quando há filtro selecionado
@@ -278,8 +293,9 @@ const Index = () => {
     const noPrazo = normalData.filter((item) => item.vencidas >= 0 && item.regularizado === "Não").length;
     const regularizadas = normalData.filter((item) => item.regularizado === "Sim").length;
     const aguardandoVerificacao = filteredByMunicipio.filter((item) => item.statusVerificacao === "aguardando_verificacao_jvm").length;
+    const emCampo = normalData.filter((item) => item.emCampo === "Sim").length;
 
-    return { total, vencidas, noPrazo, regularizadas, aguardandoVerificacao };
+    return { total, vencidas, noPrazo, regularizadas, aguardandoVerificacao, emCampo };
   }, [data, selectedMunicipio, logradouroSearch]);
 
   // Preparar dados do gráfico
@@ -351,7 +367,7 @@ const Index = () => {
         ) : (
           <>
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
               <StatsCard
                 title="Total de Irregularidades"
                 value={stats.total}
@@ -396,6 +412,15 @@ const Index = () => {
                   setActiveTab("registros");
                 }}
                 data-testid="card-regularizadas"
+              />
+              <StatsCard
+                title="Em Campo"
+                value={stats.emCampo}
+                icon={MapPin}
+                variant="info"
+                description="Verificação presencial"
+                onClick={() => setActiveTab("em-campo")}
+                data-testid="card-em-campo"
               />
               <StatsCard
                 title="Aguardando JVM"
@@ -444,7 +469,7 @@ const Index = () => {
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mt-4">
                   <StatsCard
                     title="Total"
                     value={municipioStats.total}
@@ -490,6 +515,14 @@ const Index = () => {
                     data-testid="card-municipio-regularizadas"
                   />
                   <StatsCard
+                    title="Em Campo"
+                    value={municipioStats.emCampo}
+                    icon={MapPin}
+                    variant="info"
+                    onClick={() => setActiveTab("em-campo")}
+                    data-testid="card-municipio-em-campo"
+                  />
+                  <StatsCard
                     title="Aguardando JVM"
                     value={municipioStats.aguardandoVerificacao}
                     icon={AlertTriangle}
@@ -501,14 +534,17 @@ const Index = () => {
               </Card>
             )}
 
-            {/* Tabs para Registros, Verificação JVM, Análises e Gráfico */}
+            {/* Tabs para Registros, Verificação JVM, Em Campo, Análises e Gráfico */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="grid w-full max-w-3xl grid-cols-4">
+              <TabsList className="grid w-full max-w-4xl grid-cols-5">
                 <TabsTrigger value="registros" data-testid="tab-registros">
                   Irregularidades ({filteredData.length})
                 </TabsTrigger>
                 <TabsTrigger value="verificacao-jvm" data-testid="tab-verificacao-jvm">
                   Aguardando JVM ({stats.aguardandoVerificacao})
+                </TabsTrigger>
+                <TabsTrigger value="em-campo" data-testid="tab-em-campo">
+                  Em Campo ({stats.emCampo})
                 </TabsTrigger>
                 <TabsTrigger value="analises" data-testid="tab-analises">Análises</TabsTrigger>
                 <TabsTrigger value="grafico" data-testid="tab-grafico">Gráfico de Fluxo</TabsTrigger>
@@ -529,6 +565,7 @@ const Index = () => {
                 <IrregularityTable 
                   data={filteredData} 
                   onUpdateRegularizado={handleUpdateRegularizado}
+                  onUpdateEmCampo={handleUpdateEmCampo}
                 />
               </TabsContent>
 
@@ -560,6 +597,39 @@ const Index = () => {
                   <VerificacaoJVMTable 
                     data={aguardandoVerificacaoData} 
                     onConfirmarVerificacao={handleConfirmarVerificacaoJVM}
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="em-campo" className="space-y-4">
+                <div className="space-y-4">
+                  <Card className="p-6 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900">
+                    <div className="flex items-start gap-4">
+                      <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                        <MapPin className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg text-blue-900 dark:text-blue-100 mb-2">
+                          Registros Em Campo
+                        </h3>
+                        <p className="text-sm text-blue-800 dark:text-blue-200">
+                          Estes registros foram marcados como "Em Campo" para indicar que a equipe está fazendo verificação presencial no local.
+                          Use o botão "Marcar Em Campo" na aba de irregularidades para adicionar registros aqui.
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-semibold">
+                      Irregularidades Em Campo ({emCampoData.length})
+                    </h2>
+                  </div>
+
+                  <IrregularityTable 
+                    data={emCampoData} 
+                    onUpdateRegularizado={handleUpdateRegularizado}
+                    onUpdateEmCampo={handleUpdateEmCampo}
                   />
                 </div>
               </TabsContent>
