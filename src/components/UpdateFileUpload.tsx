@@ -45,6 +45,82 @@ export const UpdateFileUpload = ({ onFileUpdate, currentData }: UpdateFileUpload
       if (!file) return;
 
       try {
+        // Se for JSON, processa diretamente
+        if (file.name.endsWith('.json')) {
+          const text = await file.text();
+          const jsonData = JSON.parse(text);
+          
+          const newFileData: Irregularity[] = jsonData.registros || [];
+          const newChartData: any[] = jsonData.chartData || [];
+
+          // Processar merge com JSON
+          const existingMap = new Map<string, Irregularity>();
+          currentData.forEach(item => {
+            const key = `${item.numFormulario}_${item.numeroPoste}`;
+            existingMap.set(key, item);
+          });
+
+          const mergedData: Irregularity[] = [];
+          let addedCount = 0;
+          let skippedCount = 0;
+          let preservedCount = 0;
+
+          newFileData.forEach((newItem) => {
+            if (!newItem.municipio || !newItem.numFormulario) return;
+            if (newItem.municipio === "TOTAL GERAL") return;
+
+            const key = `${newItem.numFormulario}_${newItem.numeroPoste}`;
+            const existingItem = existingMap.get(key);
+
+            if (existingItem) {
+              // Item já existe - usar dados do JSON, preservar apenas se JSON não tiver o campo
+              const mergedItem: Irregularity = {
+                ...newItem,
+                regularizado: newItem.regularizado ?? existingItem.regularizado ?? "Não",
+                emCampo: newItem.emCampo ?? existingItem.emCampo ?? "Não",
+                statusVerificacao: newItem.statusVerificacao ?? existingItem.statusVerificacao ?? "normal"
+              };
+
+              // Se estava regularizado e reapareceu com status diferente, marcar para verificação JVM
+              if (existingItem.regularizado === "Sim" && mergedItem.regularizado !== "Sim") {
+                mergedItem.statusVerificacao = "aguardando_verificacao_jvm";
+              }
+
+              mergedData.push(mergedItem);
+              preservedCount++;
+              existingMap.delete(key);
+            } else {
+              // Item novo - usar dados do JSON ou valores padrão
+              mergedData.push({
+                ...newItem,
+                regularizado: newItem.regularizado ?? "Não",
+                emCampo: newItem.emCampo ?? "Não",
+                statusVerificacao: newItem.statusVerificacao ?? "normal"
+              });
+              addedCount++;
+            }
+          });
+
+          // Manter itens que foram regularizados mas não estão no novo arquivo
+          existingMap.forEach(item => {
+            if (item.regularizado === "Sim") {
+              mergedData.push(item);
+              skippedCount++;
+            }
+          });
+
+          onFileUpdate(mergedData, newChartData);
+
+          toast({
+            title: "Arquivo JSON atualizado com sucesso!",
+            description: `${addedCount} novos, ${preservedCount} preservados, ${skippedCount} regularizados mantidos.`,
+          });
+
+          event.target.value = "";
+          return;
+        }
+
+        // Processar Excel
         const arrayBuffer = await file.arrayBuffer();
         const workbook = XLSX.read(arrayBuffer);
 
@@ -175,17 +251,17 @@ export const UpdateFileUpload = ({ onFileUpdate, currentData }: UpdateFileUpload
           <div className="text-center">
             <p className="text-lg font-medium" data-testid="text-update-upload-title">Atualizar arquivo semanal</p>
             <p className="text-sm text-muted-foreground mt-1" data-testid="text-update-upload-description">
-              Clique para fazer upload do novo arquivo (.xlsx)
+              Clique para fazer upload do novo arquivo (.xlsx ou .json)
             </p>
             <p className="text-xs text-muted-foreground mt-2" data-testid="text-update-upload-note">
-              Registros já regularizados que reaparecerem irão para "Aguardando JVM"
+              Preserva estados de regularização, em campo e verificação JVM
             </p>
           </div>
         </div>
         <input
           id="update-file-upload"
           type="file"
-          accept=".xlsx"
+          accept=".xlsx,.json"
           onChange={handleFileUpload}
           className="hidden"
           data-testid="input-update-file-upload"

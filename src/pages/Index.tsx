@@ -14,6 +14,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
 import * as XLSX from "xlsx";
 
 const Index = () => {
@@ -187,7 +188,12 @@ const Index = () => {
     setData(prevData =>
       prevData.map(item =>
         item.numFormulario === numFormulario && item.numeroPoste === numeroPoste
-          ? { ...item, regularizado: regularizado ? "Sim" : "Não" }
+          ? { 
+              ...item, 
+              regularizado: regularizado ? "Sim" : "Não",
+              emCampo: regularizado ? "Não" : item.emCampo,
+              dataEnvioEmail: regularizado ? format(new Date(), "dd/MM/yyyy HH:mm") : item.dataEnvioEmail
+            }
           : item
       )
     );
