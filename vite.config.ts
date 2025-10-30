@@ -2,23 +2,21 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
-// https://vitejs.dev/config/
-export default defineConfig(() => ({
-  server: {
-    host: "0.0.0.0",
-    port: 5000,
-    strictPort: true,
-    allowedHosts: true as const,
-    hmr: {
-      clientPort: 443,
-      protocol: 'wss',
-      host: process.env.REPLIT_DEV_DOMAIN || 'localhost',
-    },
-  },
+export default defineConfig({
   plugins: [react()],
+  root: path.resolve(__dirname, "client"),
+  server: {
+    allowedHosts: true,
+  },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(__dirname, "client/src"),
+      "@shared": path.resolve(__dirname, "shared"),
+      "@assets": path.resolve(__dirname, "attached_assets"),
     },
   },
-}));
+  build: {
+    outDir: path.resolve(__dirname, "dist/public"),
+    emptyOutDir: true,
+  },
+});
