@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import type { Irregularity } from "@shared/schema";
-import { AlertCircle, CheckCircle, Clock, ChevronDown, ChevronRight, MapPin } from "lucide-react";
+import { AlertCircle, CheckCircle, Clock, ChevronDown, ChevronRight, MapPin, Copy } from "lucide-react";
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -53,6 +53,21 @@ export const IrregularityTable = ({ data, onUpdateRegularizado, onUpdateEmCampo 
     toast({
       title: currentStatus === "Sim" ? "Removido de Em Campo" : "Marcado como Em Campo",
       description: `Formulário ${numFormulario}, Poste ${numeroPoste}`,
+    });
+  };
+
+  const handleCopyFormulario = (numFormulario: string) => {
+    navigator.clipboard.writeText(numFormulario).then(() => {
+      toast({
+        title: "Copiado!",
+        description: `Número do formulário ${numFormulario} copiado para área de transferência`,
+      });
+    }).catch(() => {
+      toast({
+        title: "Erro ao copiar",
+        description: "Não foi possível copiar o número do formulário",
+        variant: "destructive",
+      });
     });
   };
 
@@ -139,16 +154,16 @@ export const IrregularityTable = ({ data, onUpdateRegularizado, onUpdateEmCampo 
         <TableHeader>
           <TableRow>
             <TableHead className="w-12"></TableHead>
-            <TableHead className="w-20">Marcar</TableHead>
-            <TableHead className="w-24">Em Campo</TableHead>
+            <TableHead className="w-32 text-green-600 dark:text-green-400">Concluído regularização</TableHead>
+            <TableHead className="w-24 text-yellow-600 dark:text-yellow-400">Em Campo</TableHead>
             <TableHead>Município</TableHead>
             <TableHead>Formulário</TableHead>
+            <TableHead>Logradouro</TableHead>
+            <TableHead>Nº</TableHead>
             <TableHead>Postes</TableHead>
             <TableHead>Operadora</TableHead>
             <TableHead>Irregularidade</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Logradouro</TableHead>
-            <TableHead>Nº Logradouro</TableHead>
             <TableHead>Data Email</TableHead>
           </TableRow>
         </TableHeader>
@@ -198,13 +213,35 @@ export const IrregularityTable = ({ data, onUpdateRegularizado, onUpdateEmCampo 
                         data-testid="button-em-campo"
                         className="h-8 px-2"
                       >
-                        <MapPin className={`h-3 w-3 ${group.items[0].emCampo === "Sim" ? "mr-1" : ""}`} />
+                        <MapPin className={`h-3 w-3 text-yellow-600 dark:text-yellow-400 ${group.items[0].emCampo === "Sim" ? "mr-1" : ""}`} />
                         {group.items[0].emCampo === "Sim" && <span className="text-xs">Em Campo</span>}
                       </Button>
                     )}
                   </TableCell>
                   <TableCell className="font-medium">{group.municipio}</TableCell>
-                  <TableCell className="font-medium">{group.numFormulario}</TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <span>{group.numFormulario}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCopyFormulario(group.numFormulario);
+                        }}
+                        className="h-6 w-6 p-0 hover:bg-muted"
+                        data-testid="button-copy-formulario"
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                  <TableCell className="max-w-xs truncate">
+                    {group.logradouro}
+                  </TableCell>
+                  <TableCell>
+                    {group.numLogradouro}
+                  </TableCell>
                   <TableCell>
                     {hasMultipleItems ? (
                       <Badge variant="secondary" className="text-xs">
@@ -240,12 +277,6 @@ export const IrregularityTable = ({ data, onUpdateRegularizado, onUpdateEmCampo 
                       </div>
                     )}
                   </TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {group.logradouro}
-                  </TableCell>
-                  <TableCell>
-                    {group.numLogradouro}
-                  </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {!hasMultipleItems && group.items[0].dataEnvioEmail}
                   </TableCell>
@@ -274,20 +305,20 @@ export const IrregularityTable = ({ data, onUpdateRegularizado, onUpdateEmCampo 
                         data-testid="button-em-campo"
                         className="h-8 px-2"
                       >
-                        <MapPin className={`h-3 w-3 ${item.emCampo === "Sim" ? "mr-1" : ""}`} />
+                        <MapPin className={`h-3 w-3 text-yellow-600 dark:text-yellow-400 ${item.emCampo === "Sim" ? "mr-1" : ""}`} />
                         {item.emCampo === "Sim" && <span className="text-xs">Em Campo</span>}
                       </Button>
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm"></TableCell>
                     <TableCell className="text-muted-foreground text-sm">{group.numFormulario}</TableCell>
+                    <TableCell className="text-sm">{item.logradouro}</TableCell>
+                    <TableCell className="text-sm">{item.numLogradouro}</TableCell>
                     <TableCell className="font-medium">Poste {item.numeroPoste}</TableCell>
                     <TableCell className="text-sm">{item.operadora}</TableCell>
                     <TableCell className="max-w-xs truncate text-sm" title={item.irregularidade}>
                       {item.irregularidade}
                     </TableCell>
                     <TableCell>{getStatusBadge(item.regularizado, item.vencidas)}</TableCell>
-                    <TableCell className="text-sm">{item.logradouro}</TableCell>
-                    <TableCell className="text-sm">{item.numLogradouro}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{item.dataEnvioEmail}</TableCell>
                   </TableRow>
                 ))}

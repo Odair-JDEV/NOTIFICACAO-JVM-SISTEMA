@@ -8,7 +8,7 @@ import { Filters } from "@/components/Filters";
 import { FluxoChart } from "@/components/FluxoChart";
 import { AnalysisDashboard } from "@/components/AnalysisDashboard";
 import type { Irregularity } from "@shared/schema";
-import { AlertCircle, CheckCircle, Clock, FileText, Download, AlertTriangle, MapPin } from "lucide-react";
+import { AlertCircle, CheckCircle, Clock, FileText, Download, AlertTriangle, MapPin, BookOpen, Save, Info, Upload } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -604,9 +604,10 @@ const Index = () => {
               </Card>
             )}
 
-            {/* Tabs para Registros, Verificação JVM, Em Campo, Análises e Gráfico */}
+            {/* Tabs para Instruções, Registros, Verificação JVM, Em Campo, Análises e Gráfico */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="grid w-full max-w-4xl grid-cols-5">
+              <TabsList className="grid w-full max-w-6xl grid-cols-6">
+                <TabsTrigger value="instrucoes" data-testid="tab-instrucoes">Instruções</TabsTrigger>
                 <TabsTrigger value="registros" data-testid="tab-registros">
                   Irregularidades ({filteredData.length})
                 </TabsTrigger>
@@ -619,6 +620,162 @@ const Index = () => {
                 <TabsTrigger value="analises" data-testid="tab-analises">Análises</TabsTrigger>
                 <TabsTrigger value="grafico" data-testid="tab-grafico">Gráfico de Fluxo</TabsTrigger>
               </TabsList>
+              
+              <TabsContent value="instrucoes" className="space-y-4">
+                <Card className="p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                      <BookOpen className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <h2 className="text-3xl font-bold text-blue-900 dark:text-blue-100">
+                        Como Usar o Sistema
+                      </h2>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Guia completo para gerenciar irregularidades de telecomunicações
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <Card className="p-6 bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
+                      <div className="flex items-start gap-4">
+                        <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                          <Info className="w-6 h-6 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg text-green-900 dark:text-green-100 mb-3">
+                            ⭐ Sistema 100% Gratuito
+                          </h3>
+                          <p className="text-sm text-green-800 dark:text-green-200 mb-2">
+                            Este sistema funciona <strong>totalmente offline e gratuitamente</strong>. Todas as informações são processadas e armazenadas localmente no seu navegador. Não há necessidade de cadastro, login ou pagamento.
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+
+                    <Card className="p-6 bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-900">
+                      <div className="flex items-start gap-4">
+                        <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                          <Save className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg text-orange-900 dark:text-orange-100 mb-3">
+                            ⚠️ IMPORTANTE: Salve Suas Alterações!
+                          </h3>
+                          <p className="text-sm text-orange-800 dark:text-orange-200 mb-3">
+                            <strong>O sistema utiliza armazenamento local em JSON.</strong> Isso significa que:
+                          </p>
+                          <ul className="list-disc list-inside space-y-2 text-sm text-orange-800 dark:text-orange-200 ml-4">
+                            <li><strong>Sempre exporte seus dados</strong> após fazer alterações usando o botão "Exportar Excel Completo"</li>
+                            <li>Para continuar trabalhando, <strong>importe o arquivo JSON/Excel exportado</strong> na próxima sessão</li>
+                            <li>Suas edições <strong>não ficam salvas automaticamente</strong> - você precisa exportar manualmente</li>
+                            <li>Se limpar os dados do navegador ou trocar de dispositivo, seus dados serão perdidos se não foram exportados</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </Card>
+
+                    <div className="space-y-4">
+                      <h3 className="text-xl font-semibold flex items-center gap-2">
+                        <Upload className="w-5 h-5" />
+                        Passo a Passo de Uso
+                      </h3>
+                      
+                      <div className="grid gap-4">
+                        <Card className="p-4 border-l-4 border-l-blue-500">
+                          <h4 className="font-semibold mb-2">1. Importar Dados</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Clique em "Upload de Arquivo" e selecione um arquivo Excel (.xlsx) ou JSON (.json) contendo os dados das irregularidades. O sistema processará automaticamente as informações.
+                          </p>
+                        </Card>
+
+                        <Card className="p-4 border-l-4 border-l-green-500">
+                          <h4 className="font-semibold mb-2">2. Visualizar e Filtrar</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Use os filtros disponíveis para visualizar irregularidades por município, status, operadora ou tipo de irregularidade. Clique nos cards de estatísticas para filtros rápidos.
+                          </p>
+                        </Card>
+
+                        <Card className="p-4 border-l-4 border-l-purple-500">
+                          <h4 className="font-semibold mb-2">3. Editar Informações</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Nas tabelas de cada aba, você pode marcar irregularidades como regularizadas, enviar para verificação JVM ou marcar como "Em Campo". Faça as alterações necessárias.
+                          </p>
+                        </Card>
+
+                        <Card className="p-4 border-l-4 border-l-orange-500">
+                          <h4 className="font-semibold mb-2">4. ⚠️ SALVAR - Exportar Dados</h4>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            <strong>ESSENCIAL:</strong> Após qualquer alteração, clique em "Exportar Excel Completo" para salvar seus dados. Este arquivo conterá todas as suas edições.
+                          </p>
+                          <p className="text-sm text-orange-600 dark:text-orange-400 font-medium">
+                            💾 Dica: Salve o arquivo exportado com a data no nome, ex: "irregularidades_2025-10-31.xlsx"
+                          </p>
+                        </Card>
+
+                        <Card className="p-4 border-l-4 border-l-red-500">
+                          <h4 className="font-semibold mb-2">5. Continuar Trabalhando</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Para retomar o trabalho em outra sessão, use o botão "Atualizar Arquivo" e importe o arquivo que você exportou anteriormente. Todas as suas edições estarão lá!
+                          </p>
+                        </Card>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 pt-4">
+                      <h3 className="text-xl font-semibold">Recursos Disponíveis</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Card className="p-4">
+                          <h4 className="font-semibold mb-2">📊 Irregularidades</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Visualize todas as irregularidades ativas, marque como regularizadas ou envie para verificação.
+                          </p>
+                        </Card>
+                        <Card className="p-4">
+                          <h4 className="font-semibold mb-2">🔍 Aguardando JVM</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Registros que precisam de verificação pela equipe JVM antes de prosseguir.
+                          </p>
+                        </Card>
+                        <Card className="p-4">
+                          <h4 className="font-semibold mb-2">📍 Em Campo</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Irregularidades que estão sendo verificadas presencialmente pela equipe.
+                          </p>
+                        </Card>
+                        <Card className="p-4">
+                          <h4 className="font-semibold mb-2">📈 Análises</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Dashboard com insights e análises detalhadas dos dados importados.
+                          </p>
+                        </Card>
+                        <Card className="p-4">
+                          <h4 className="font-semibold mb-2">📉 Gráfico de Fluxo</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Visualização temporal do fluxo de irregularidades ao longo das semanas.
+                          </p>
+                        </Card>
+                        <Card className="p-4">
+                          <h4 className="font-semibold mb-2">💾 Exportação</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Exporte dados completos ou apenas registros regularizados em formato Excel.
+                          </p>
+                        </Card>
+                      </div>
+                    </div>
+
+                    <Card className="p-6 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900 mt-6">
+                      <div className="text-center">
+                        <p className="text-sm text-blue-800 dark:text-blue-200">
+                          💡 <strong>Lembre-se:</strong> Este sistema é totalmente gratuito e funciona localmente. 
+                          Sempre exporte seus dados após editar para não perder nenhuma informação!
+                        </p>
+                      </div>
+                    </Card>
+                  </div>
+                </Card>
+              </TabsContent>
               
               <TabsContent value="registros" className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -731,6 +888,11 @@ const Index = () => {
           </>
         )}
       </div>
+      <footer className="mt-8 py-4 border-t border-border/50 backdrop-blur-md bg-background/60">
+        <div className="container mx-auto px-6 text-center text-sm text-muted-foreground" data-testid="footer-developer">
+          Desenvolvido por: <span className="font-semibold text-foreground">ODAIR-JDEV</span>
+        </div>
+      </footer>
     </div>
   );
 };
